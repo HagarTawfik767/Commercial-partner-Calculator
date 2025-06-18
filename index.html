@@ -1,0 +1,272 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Andalusia Plus - Commercial Partner Calculator</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 520px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #e1f5fe;
+    border-radius: 8px;
+  }
+  h1 {
+    text-align: center;
+    color: #0277bd;
+  }
+  label {
+    display: block;
+    margin: 14px 0 6px 0;
+    font-weight: bold;
+    color: #01579b;
+  }
+  input[type="number"], select {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 1rem;
+    border: 1px solid #81d4fa;
+    border-radius: 4px;
+  }
+  .output {
+    background: #b3e5fc;
+    padding: 15px;
+    margin-top: 25px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    color: #01579b;
+  }
+  .output span {
+    font-weight: bold;
+  }
+  footer {
+    margin-top: 30px;
+    font-size: 0.9rem;
+    color: #555;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<h1>Commercial Partner Calculator</h1>
+
+<label for="partnerClass">Select Partner Class</label>
+<select id="partnerClass">
+  <option value="1">Class 1 - Large Retail & Lifestyle (Clearing House)</option>
+  <option value="2">Class 2 - Mid-sized Services (Hybrid Model)</option>
+  <option value="3">Class 3 - Small Local & Specialty (Prepaid + Subscription)</option>
+</select>
+
+<!-- Class 1 Inputs -->
+<div id="class1Inputs" class="classInputs">
+  <label for="c1PointsIssued">Points Issued</label>
+  <input id="c1PointsIssued" type="number" min="0" step="1000" value="2000000" />
+  
+  <label for="c1PointsRedeemed">Points Redeemed</label>
+  <input id="c1PointsRedeemed" type="number" min="0" step="1000" value="1800000" />
+  
+  <label for="c1ValuePerPoint">Value per Point (SAR)</label>
+  <input id="c1ValuePerPoint" type="number" min="0" step="0.01" value="0.12" />
+  
+  <label for="c1CommissionRate">Commission Rate (%)</label>
+  <input id="c1CommissionRate" type="number" min="0" max="100" step="0.1" value="5" />
+</div>
+
+<!-- Class 2 Inputs -->
+<div id="class2Inputs" class="classInputs" style="display:none;">
+  <label for="c2PointsIssued">Points Issued</label>
+  <input id="c2PointsIssued" type="number" min="0" step="1000" value="500000" />
+  
+  <label for="c2PointsRedeemed">Points Redeemed</label>
+  <input id="c2PointsRedeemed" type="number" min="0" step="1000" value="600000" />
+  
+  <label for="c2ValuePerPoint">Value per Point (SAR)</label>
+  <input id="c2ValuePerPoint" type="number" min="0" step="0.01" value="0.10" />
+  
+  <label for="c2CommissionRate">Commission Rate (%)</label>
+  <input id="c2CommissionRate" type="number" min="0" max="100" step="0.1" value="3" />
+  
+  <label for="c2IncrementalSales">Incremental Sales from Loyalty (SAR)</label>
+  <input id="c2IncrementalSales" type="number" min="0" step="1000" value="100000" />
+  
+  <label for="c2RevenueShareRate">Revenue Share Rate (%)</label>
+  <input id="c2RevenueShareRate" type="number" min="0" max="100" step="0.1" value="10" />
+</div>
+
+<!-- Class 3 Inputs -->
+<div id="class3Inputs" class="classInputs" style="display:none;">
+  <label for="c3PrepaidPoints">Prepaid Points Sold</label>
+  <input id="c3PrepaidPoints" type="number" min="0" step="100" value="10000" />
+  
+  <label for="c3SalePricePerPoint">Sale Price per Point (SAR)</label>
+  <input id="c3SalePricePerPoint" type="number" min="0" step="0.01" value="0.15" />
+  
+  <label for="c3SubscriptionFee">Monthly Subscription Fee (SAR)</label>
+  <input id="c3SubscriptionFee" type="number" min="0" step="10" value="1000" />
+</div>
+
+<div class="output" id="results">
+  <p id="resultNetPosition" style="display:none;">Net Position (Points): <span></span></p>
+  <p id="resultSettlementAmount" style="display:none;">Settlement Amount (SAR): <span></span></p>
+  <p id="resultCommissionAmount" style="display:none;">Commission Amount (SAR): <span></span></p>
+  <p id="resultTotalAmount" style="display:none;"><strong>Total Amount Partner Pays (if negative) or Receives (if positive) (SAR): <span></span></strong></p>
+  <p id="resultRevenueShare" style="display:none;">Revenue Share Amount (SAR): <span></span></p>
+  <p id="resultIncrementalSales" style="display:none;">Incremental Sales from Loyalty (SAR): <span></span></p>
+  <p id="resultNetPayout" style="display:none;"><strong>Net Payout to Partner (SAR): <span></span></strong></p>
+  <p id="resultPrepaidRevenue" style="display:none;">Prepaid Revenue (SAR): <span></span></p>
+  <p id="resultSubscriptionFee" style="display:none;">Subscription Fee (SAR): <span></span></p>
+  <p id="resultNetRevenue" style="display:none;"><strong>Net Revenue (SAR): <span></span></strong></p>
+</div>
+
+<script>
+  const partnerClassSelect = document.getElementById('partnerClass');
+  const classInputs = {
+    1: document.getElementById('class1Inputs'),
+    2: document.getElementById('class2Inputs'),
+    3: document.getElementById('class3Inputs')
+  };
+
+  const results = {
+    netPosition: document.getElementById('resultNetPosition'),
+    settlementAmount: document.getElementById('resultSettlementAmount'),
+    commissionAmount: document.getElementById('resultCommissionAmount'),
+    totalAmount: document.getElementById('resultTotalAmount'),
+    revenueShare: document.getElementById('resultRevenueShare'),
+    incrementalSales: document.getElementById('resultIncrementalSales'),
+    netPayout: document.getElementById('resultNetPayout'),
+    prepaidRevenue: document.getElementById('resultPrepaidRevenue'),
+    subscriptionFee: document.getElementById('resultSubscriptionFee'),
+    netRevenue: document.getElementById('resultNetRevenue')
+  };
+
+  function hideAllResults() {
+    for (let key in results) {
+      results[key].style.display = 'none';
+    }
+  }
+
+  function showResults(keys) {
+    keys.forEach(key => {
+      results[key].style.display = 'block';
+    });
+  }
+
+  function calculateClass1() {
+    const pointsIssued = Number(document.getElementById('c1PointsIssued').value);
+    const pointsRedeemed = Number(document.getElementById('c1PointsRedeemed').value);
+    const valuePerPoint = Number(document.getElementById('c1ValuePerPoint').value);
+    const commissionRate = Number(document.getElementById('c1CommissionRate').value) / 100;
+
+    const netPosition = pointsRedeemed - pointsIssued;
+    const settlementAmount = Math.abs(netPosition) * valuePerPoint;
+    const commissionAmount = pointsRedeemed * valuePerPoint * commissionRate;
+
+    let totalAmount;
+    if (netPosition < 0) {
+      totalAmount = settlementAmount + commissionAmount; // Partner pays platform
+    } else {
+      totalAmount = settlementAmount - commissionAmount; // Platform pays partner
+    }
+
+    results.netPosition.querySelector('span').textContent = netPosition.toLocaleString();
+    results.settlementAmount.querySelector('span').textContent = settlementAmount.toFixed(2);
+    results.commissionAmount.querySelector('span').textContent = commissionAmount.toFixed(2);
+    results.totalAmount.querySelector('span').textContent = totalAmount.toFixed(2);
+
+    hideAllResults();
+    showResults(['netPosition', 'settlementAmount', 'commissionAmount', 'totalAmount']);
+  }
+
+  function calculateClass2() {
+    const pointsIssued = Number(document.getElementById('c2PointsIssued').value);
+    const pointsRedeemed = Number(document.getElementById('c2PointsRedeemed').value);
+    const valuePerPoint = Number(document.getElementById('c2ValuePerPoint').value);
+    const commissionRate = Number(document.getElementById('c2CommissionRate').value) / 100;
+    const incrementalSales = Number(document.getElementById('c2IncrementalSales').value);
+    const revenueShareRate = Number(document.getElementById('c2RevenueShareRate').value) / 100;
+
+    const netPosition = pointsRedeemed - pointsIssued;
+    const settlementAmount = Math.abs(netPosition) * valuePerPoint;
+    const commissionAmount = pointsRedeemed * valuePerPoint * commissionRate;
+    const revenueShareAmount = incrementalSales * revenueShareRate;
+
+    // Net payout to partner
+    // If netPosition > 0 platform owes partner settlement minus commission plus revenue share
+    // If netPosition < 0 partner owes settlement + commission; revenue share still paid to platform (not deducted)
+    let netPayout;
+    if (netPosition > 0) {
+      netPayout = settlementAmount - commissionAmount + revenueShareAmount;
+    } else {
+      netPayout = - (settlementAmount + commissionAmount);
+    }
+
+    results.netPosition.querySelector('span').textContent = netPosition.toLocaleString();
+    results.settlementAmount.querySelector('span').textContent = settlementAmount.toFixed(2);
+    results.commissionAmount.querySelector('span').textContent = commissionAmount.toFixed(2);
+    results.revenueShare.querySelector('span').textContent = revenueShareAmount.toFixed(2);
+    results.incrementalSales.querySelector('span').textContent = incrementalSales.toFixed(2);
+    results.netPayout.querySelector('span').textContent = netPayout.toFixed(2);
+
+    hideAllResults();
+    showResults(['netPosition', 'settlementAmount', 'commissionAmount', 'revenueShare', 'incrementalSales', 'netPayout']);
+  }
+
+  function calculateClass3() {
+    const prepaidPoints = Number(document.getElementById('c3PrepaidPoints').value);
+    const salePricePerPoint = Number(document.getElementById('c3SalePricePerPoint').value);
+    const subscriptionFee = Number(document.getElementById('c3SubscriptionFee').value);
+
+    const prepaidRevenue = prepaidPoints * salePricePerPoint;
+    const netRevenue = prepaidRevenue - subscriptionFee;
+
+    results.prepaidRevenue.querySelector('span').textContent = prepaidRevenue.toFixed(2);
+    results.subscriptionFee.querySelector('span').textContent = subscriptionFee.toFixed(2);
+    results.netRevenue.querySelector('span').textContent = netRevenue.toFixed(2);
+
+    hideAllResults();
+    showResults(['prepaidRevenue', 'subscriptionFee', 'netRevenue']);
+  }
+
+  function onPartnerClassChange() {
+    const selectedClass = partnerClassSelect.value;
+    for (let key in classInputs) {
+      classInputs[key].style.display = (key === selectedClass) ? 'block' : 'none';
+    }
+    calculate();
+  }
+
+  function calculate() {
+    const selectedClass = partnerClassSelect.value;
+    if (selectedClass === '1') calculateClass1();
+    else if (selectedClass === '2') calculateClass2();
+    else if (selectedClass === '3') calculateClass3();
+  }
+
+  partnerClassSelect.addEventListener('change', onPartnerClassChange);
+
+  // Add listeners for inputs
+  // Class 1
+  ['c1PointsIssued', 'c1PointsRedeemed', 'c1ValuePerPoint', 'c1CommissionRate'].forEach(id => {
+    document.getElementById(id).addEventListener('input', calculate);
+  });
+  // Class 2
+  ['c2PointsIssued', 'c2PointsRedeemed', 'c2ValuePerPoint', 'c2CommissionRate', 'c2IncrementalSales', 'c2RevenueShareRate'].forEach(id => {
+    document.getElementById(id).addEventListener('input', calculate);
+  });
+  // Class 3
+  ['c3PrepaidPoints', 'c3SalePricePerPoint', 'c3SubscriptionFee'].forEach(id => {
+    document.getElementById(id).addEventListener('input', calculate);
+  });
+
+  // Initial setup
+  onPartnerClassChange();
+</script>
+
+<footer>
+  Andalusia Plus MVP • Commercial Partner Calculator
+</footer>
+</body>
+</html>
